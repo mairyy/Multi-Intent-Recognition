@@ -12,6 +12,9 @@
 │   └── default.json
 ├── data
 │   ├── atomic
+│   │   ├── processed
+│   │      └── generation
+│   │          └── categories_oEffect#oReact#oWant#xAttr#xEffect#xIntent#xNeed#xReact#xWant-maxe1_17-maxe2_35-maxr_1.pickle
 │   │   ├── README.md
 │   │   ├── sap2019atomic.pdf
 │   │   ├── v4_atomic_all_agg.csv
@@ -28,6 +31,7 @@
 │       ├── test.txt
 │       └── train100k.txt
 ├── LICENSE
+├── inputs
 ├── model
 │   ├── encoder_bpe_40000.json
 │   ├── params_0.npy
@@ -46,7 +50,6 @@
 ├── pretrained_models
 │   ├── atomic_pretrained_model.pickle
 │   └── conceptnet_pretrained_model.pickle
-├── pretrained_models.tar.gz
 ├── scripts
 │   ├── classify
 │   │   ├── classify_conceptnet_generations.py
@@ -150,9 +153,12 @@
 │   ├── sent8.txt
 │   ├── sent9.txt
 │   └── sent.txt
-└── utils
-    ├── __pycache__
-    │   ├── utils.cpython-36.pyc
-    │   └── utils.cpython-37.pyc
-    └── utils.py
+├── utils
+│   ├── __pycache__
+│   │   ├── utils.cpython-36.pyc
+│   │   └── utils.cpython-37.pyc
+│   └── utils.py
+├── outputs
+└── generate_mintrec.py
+...
  ```
