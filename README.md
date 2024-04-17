@@ -5,7 +5,8 @@
 - Firstly, create environment and install dependencies:
 
 ```
-conda create env --name mir python=3.6
+conda create --name mir python=3.6
+conda activate mir
 pip install tensorflow
 pip install ftfy==5.1
 conda install -c conda-forge spacy
@@ -14,12 +15,6 @@ pip install tensorboardX
 pip install tqdm
 pip install pandas
 pip install ipython
-```
-
-- Activate environment:
-
-```
-conda activate mir
 ```
 
 - Prepare Comet:
