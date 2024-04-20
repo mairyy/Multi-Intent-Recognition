@@ -41,11 +41,14 @@ python generate_relations.py
 ```
 
 <h1>2. Running baseline Mag-Bert</h1>
+
 - Install requirements:
+
 ```
 cd mag-bert
 conda create --name mir python=3.8
 pip install torch torchvision torchaudio
 pip install -r requirements.txt
 ```
+
 - Run: `sh scripts/run_mag_bert.sh`
