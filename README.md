@@ -5,7 +5,8 @@
 - Firstly, create environment and install dependencies:
 
 ```
-conda create env --name mir python=3.6
+conda create --name mir python=3.6
+conda activate mir
 pip install tensorflow
 pip install ftfy==5.1
 conda install -c conda-forge spacy
@@ -14,12 +15,6 @@ pip install tensorboardX
 pip install tqdm
 pip install pandas
 pip install ipython
-```
-
-- Activate environment:
-
-```
-conda activate mir
 ```
 
 - Prepare Comet:
@@ -44,3 +39,13 @@ python scripts/data/make_conceptnet_data_loader.py
 ```
 python generate_relations.py 
 ```
+
+<h1>2. Running baseline Mag-Bert</h1>
+- Install requirements:
+```
+cd mag-bert
+conda create --name mir python=3.8
+pip install torch torchvision torchaudio
+pip install -r requirements.txt
+```
+- Run: `sh scripts/run_mag_bert.sh`
