@@ -33,7 +33,6 @@ class MAG(nn.Module):
 
         if self.args.need_aligned:
             text_embedding, acoustic, visual  = self.alignNet(text_embedding, acoustic, visual)
-        
         weight_v = F.relu(self.W_hv(torch.cat((visual, text_embedding), dim=-1)))
         weight_a = F.relu(self.W_ha(torch.cat((acoustic, text_embedding), dim=-1)))
 

@@ -30,11 +30,16 @@ class DataManager:
             raise ValueError('The input data mode is not supported.')
         self.logger.info('Lists of intent labels are: %s', str(self.label_list))
 
-        args.num_labels = len(self.label_list)        
+        args.num_labels = len(self.label_list)
         args.text_feat_dim, args.video_feat_dim, args.audio_feat_dim = \
             self.benchmarks['feat_dims']['text'], self.benchmarks['feat_dims']['video'], self.benchmarks['feat_dims']['audio']
         args.text_seq_len, args.video_seq_len, args.audio_seq_len = \
             self.benchmarks['max_seq_lengths']['text'], self.benchmarks['max_seq_lengths']['video'], self.benchmarks['max_seq_lengths']['audio']
+
+        if args.relation != 'xWant':
+            args.text_seq_len = args.text_seq_len + self.benchmarks['max_seq_lengths']['relation']
+        else:
+            args.text_seq_len += 15
 
         self.train_data_index, self.train_label_ids = self._get_indexes_annotations(os.path.join(self.data_path, 'train.tsv'), args.data_mode)
         self.dev_data_index, self.dev_label_ids = self._get_indexes_annotations(os.path.join(self.data_path, 'dev.tsv'), args.data_mode)

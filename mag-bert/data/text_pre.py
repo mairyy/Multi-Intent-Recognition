@@ -2,6 +2,7 @@ import os
 import csv
 import sys
 import logging
+import pandas as pd
 from transformers import BertTokenizer
 
 __all__ = ['TextDataset']
@@ -24,32 +25,37 @@ class TextDataset:
 
         processor = DatasetProcessor()
 
-        train_examples = processor.get_examples(base_attrs['data_path'], 'train')
-        train_feats = self._get_bert_feats(args, train_examples, base_attrs)
+        train_examples= processor.get_examples(base_attrs['data_path'], 'train', args.relation, args.relation_type)
+        train_feats = self._get_bert_feats(args, train_examples, base_attrs, 'train')
 
-        dev_examples = processor.get_examples(base_attrs['data_path'], 'dev')
-        dev_feats = self._get_bert_feats(args, dev_examples, base_attrs)
+        dev_examples = processor.get_examples(base_attrs['data_path'], 'dev', args.relation, args.relation_type)
+        dev_feats = self._get_bert_feats(args, dev_examples, base_attrs, 'dev')
 
-        test_examples = processor.get_examples(base_attrs['data_path'], 'test')
-        test_feats = self._get_bert_feats(args, test_examples, base_attrs)
+        test_examples = processor.get_examples(base_attrs['data_path'], 'test', args.relation, args.relation_type)
+        test_feats = self._get_bert_feats(args, test_examples, base_attrs, 'test')
         
         self.logger.info('Generate Text Features Finished...')
 
         return {
             'train': train_feats,
             'dev': dev_feats,
-            'test': test_feats
+            'test': test_feats,
         }
 
-    def _get_bert_feats(self, args, examples, base_attrs):
+    def _get_bert_feats(self, args, examples, base_attrs, type_mode='test', relation=None):
 
         max_seq_length = base_attrs["benchmarks"]['max_seq_lengths']['text']
+        max_relation_length = base_attrs["benchmarks"]['max_seq_lengths']['relation']
+        max_seq_length += max_relation_length
 
         if args.text_backbone.startswith('bert'):
             tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)   
 
         features = convert_examples_to_features(examples, max_seq_length, tokenizer)     
         features_list = [[feat.input_ids, feat.input_mask, feat.segment_ids] for feat in features]
+
+        # relation_features = convert_examples_to_features(relation, max_relation_length, tokenizer)
+        # relation_features_list = [[feat.input_ids, feat.input_mask, feat.segment_ids] for feat in relation_features]
 
         return features_list
 
@@ -92,40 +98,76 @@ class DataProcessor(object):
     @classmethod
     def _read_tsv(cls, input_file, quotechar=None):
         """Reads a tab separated value file."""
-        with open(input_file, "r") as f:
-            reader = csv.reader(f, delimiter="\t", quotechar=quotechar)
-            lines = []
-            for line in reader:
-                if sys.version_info[0] == 2:
-                    line = list(unicode(cell, 'utf-8') for cell in line)
-                lines.append(line)
-            return lines
+        inputs = pd.read_csv(input_file, sep='\t')
+        return inputs
+    #     with open(input_file, "r") as f:
+    #         reader = csv.reader(f, delimiter="\t", quotechar=quotechar)
+    #         lines = []
+    #         for line in reader:
+    #             if sys.version_info[0] == 2:
+    #                 line = list(unicode(cell, 'utf-8') for cell in line)
+    #             lines.append(line)
+    #         return lines
+    
+    @classmethod
+    def _read_csv(cls, input_file):
+        """Read csv file. Return pandas dataframe."""
+        inputs = pd.read_csv(input_file, sep=',')
+        return inputs
 
 class DatasetProcessor(DataProcessor):
 
-    def get_examples(self, data_dir, mode):
+    def get_examples(self, data_dir, mode, relation=False, relation_type=None):
         if mode == 'train':
             return self._create_examples(
-                self._read_tsv(os.path.join(data_dir, "train.tsv")), "train")
+                self._read_tsv(os.path.join(data_dir, "train.tsv")), "train", data_dir, relation, relation_type)
         elif mode == 'dev':
             return self._create_examples(
-                self._read_tsv(os.path.join(data_dir, "dev.tsv")), "train")
+                self._read_tsv(os.path.join(data_dir, "dev.tsv")), "dev", data_dir, relation, relation_type)
         elif mode == 'test':
             return self._create_examples(
-                self._read_tsv(os.path.join(data_dir, "test.tsv")), "test")
+                self._read_tsv(os.path.join(data_dir, "test.tsv")), "test", data_dir, relation, relation_type)
 
-    def _create_examples(self, lines, set_type):
+    def _create_examples(self, lines, set_type, data_dir=None, relation=False, relation_type=None):
         """Creates examples for the training and dev sets."""
         examples = []
-        for (i, line) in enumerate(lines):
-            if i == 0:
-                continue
+        # relations = None
+        texts = lines['text']
+        # for (i, line) in enumerate(lines):
+        #     if i == 0:
+        #         continue
 
-            guid = "%s-%s" % (set_type, i)
-            text_a = line[3]
+        #     guid = "%s-%s" % (set_type, i)
+        #     text_a = line[3]
 
-            examples.append(
-                InputExample(guid=guid, text_a=text_a, text_b=None))
+        #     examples.append(
+        #         InputExample(guid=guid, text_a=text_a, text_b=None))
+        if relation:
+            # relations = []
+            if set_type == "train":
+                inputs = self._read_csv(os.path.join(data_dir, "relations", "atomic_train.csv"))
+            elif set_type == "dev":
+                inputs = self._read_csv(os.path.join(data_dir, "relations", "atomic_dev.csv"))
+            else:
+                inputs = self._read_csv(os.path.join(data_dir, "relations", "atomic_test.csv"))
+            
+            for i, line in enumerate(inputs[relation_type]):
+                guid = "%s-%s" % (set_type, i+1)
+                if relation_type == 'xAttr':
+                    line = "the part of speaker is " + line[2:len(line)-2]
+                elif relation_type == 'xReact':
+                    line = "the reaction of speaker is " + line[2:len(line)-2]
+                elif relation_type == 'xWant':
+                    # line = "the intention of speaker is " + line[2:len(line)-2]
+                    line = "then speaker want to " + line[2:len(line)-2]
+                else:
+                    line = "the " + str(relation_type) + " of this sentence is " + line[2:len(line)-2]
+                text_a = texts[i] + line
+                examples.append(InputExample(guid=guid, text_a=text_a, text_b=None))
+        else:
+            for i, line in enumerate(texts):
+                guid = "%s-%s" % (set_type, i+1)
+                examples.append(InputExample(guid=guid, text_a=line, text_b=None))
         return examples
 
 def convert_examples_to_features(examples, max_seq_length, tokenizer):
@@ -189,13 +231,13 @@ def convert_examples_to_features(examples, max_seq_length, tokenizer):
         assert len(segment_ids) == max_seq_length
 
         # if ex_index < 5:
-        #     logger.info("*** Example ***")
-        #     logger.info("guid: %s" % (example.guid))
-        #     logger.info("tokens: %s" % " ".join(
+        #     print("*** Example ***")
+        #     print("guid: %s" % (example.guid))
+        #     print("tokens: %s" % " ".join(
         #         [str(x) for x in tokens]))
-        #     logger.info("input_ids: %s" % " ".join([str(x) for x in input_ids]))
-        #     logger.info("input_mask: %s" % " ".join([str(x) for x in input_mask]))
-        #     logger.info(
+        #     print("input_ids: %s" % " ".join([str(x) for x in input_ids]))
+        #     print("input_mask: %s" % " ".join([str(x) for x in input_mask]))
+        #     print(
         #         "segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
 
         features.append(

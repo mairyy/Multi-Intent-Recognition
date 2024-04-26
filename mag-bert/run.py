@@ -3,6 +3,7 @@ from data.base import DataManager
 from methods import method_map
 from backbones.base import ModelManager
 from utils.functions import set_torch_seed, save_results, set_output_path
+from data.__init__ import benchmarks
 
 import argparse
 import logging
@@ -66,6 +67,10 @@ def parse_arguments():
 
     parser.add_argument("--results_file_name", type=str, default = 'results.csv', help="The file name of all the experimental results.")    
 
+    parser.add_argument("--relation", action="store_true", help="whether to combine text with relation.")
+
+    parser.add_argument("--relation_type", type=str, default = 'xAttr', help="Type of relations to combine.")
+
     args = parser.parse_args()
 
     return args
@@ -76,8 +81,10 @@ def set_logger(args):
         os.makedirs(args.log_path)
     
     time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    args.logger_name =  f"{args.method}_{args.dataset}_{args.data_mode}_{time}"
-
+    if args.relation:
+        args.logger_name =  f"{args.method}_{args.dataset}_{args.data_mode}_{args.relation_type}_{time}"
+    else:
+        args.logger_name =  f"{args.method}_{args.dataset}_{args.data_mode}_{time}"
     logger = logging.getLogger(args.logger_name)
     logger.setLevel(logging.DEBUG)
 
