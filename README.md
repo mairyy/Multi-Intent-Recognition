@@ -32,7 +32,7 @@ python scripts/data/make_conceptnet_data_loader.py
 
 - Make sure your directory resembles this: https://github.com/mairyy/Multi-Intent-Recognition/blob/main/comet-commonsense/directory.md
     
-- Put your text files you want to generate relations into input folder
+- Put your text files you want to generate relations into `input/`
 
 - Generate relations by running the following code:
 
@@ -40,7 +40,7 @@ python scripts/data/make_conceptnet_data_loader.py
 python generate_relations.py 
 ```
 
-<h1>2. Running baseline Mag-Bert</h1>
+<h1 id='2'>2. Running baseline Mag-Bert</h1>
 
 - Install requirements:
 
@@ -51,4 +51,10 @@ pip install torch torchvision torchaudio
 pip install -r requirements.txt
 ```
 
+- Download datasets [here](https://drive.google.com/drive/folders/15lEhpPbR4I9qjLpvid2bLKUfx5ohCmxE?usp=sharing), and put MIntRec folder in `datasets/`
+
 - Run: `sh scripts/run_mag_bert.sh`
+
+<h1>3. Running concate relation + Mag-Bert</h1>
+
+Following [section 2](#2)

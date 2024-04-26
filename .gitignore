@@ -1,2 +1,6 @@
 **/datasets
 **/__pycache__
+logs/
+outputs/
+results/
+cache/
