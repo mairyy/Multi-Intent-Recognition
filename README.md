@@ -57,4 +57,11 @@ pip install -r requirements.txt
 
 <h1>3. Running concate relation + Mag-Bert</h1>
 
-Following [section 2](#2)
+- Following [section 2](#2)
+
+- Before run `sh scripts/run_mag_bert.sh`:
+
+    - Download data relations (atomic_dev.csv, atomic_test.csv, atomic_train.csv) [here](https://drive.google.com/drive/folders/1B37IWTCfxvGd9R6VHmES5qY_P5YRpxIu?usp=sharing) and put into `dataset/MIntRec/relations/`
+
+    - Make sure your directory resembles this: https://github.com/mairyy/Multi-Intent-Recognition/tree/relation-comet/mag-bert/directory.md
+
