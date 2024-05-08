@@ -312,7 +312,9 @@ class MAG_BERT(nn.Module):
     
     def forward(self, text_feats, video_feats, audio_feats):
         
-    
+        print("text shape:", text_feats.shape) #torch.Size([16, 3, 30]) 
+        print("visual shape:", video_feats.shape) #visual shape: torch.Size([16, 230, 256])
+        print("audio shape:", audio_feats.shape) #audio shape: torch.Size([16, 480, 768])
         outputs = self.model(
             text = text_feats,
             visual = video_feats,
