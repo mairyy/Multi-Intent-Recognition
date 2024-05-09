@@ -151,19 +151,30 @@ class DatasetProcessor(DataProcessor):
             else:
                 inputs = self._read_csv(os.path.join(data_dir, "relations", "atomic_test.csv"))
             
-            for i, line in enumerate(inputs[relation_type]):
-                guid = "%s-%s" % (set_type, i+1)
-                if relation_type == 'xAttr':
-                    line = "the part of speaker is " + line[2:len(line)-2]
-                elif relation_type == 'xReact':
-                    line = "the reaction of speaker is " + line[2:len(line)-2]
-                elif relation_type == 'xWant':
-                    # line = "the intention of speaker is " + line[2:len(line)-2]
-                    line = "then speaker want to " + line[2:len(line)-2]
-                else:
-                    line = "the " + str(relation_type) + " of this sentence is " + line[2:len(line)-2]
-                text_a = texts[i] + line
-                examples.append(InputExample(guid=guid, text_a=text_a, text_b=None))
+            if relation_type == 'xReact_xWant':
+                xReact = list(inputs['xReact'])
+                xWant = list(inputs['xWant'])
+                for i in range(len(inputs)):
+                    guid = "%s-%s" % (set_type, i+1)
+                    line = " the speaker feels " + str(xReact[i][2:len(xReact[i])-2]) + " and wants " + str(xWant[i][2:len(xWant[i])-2])
+                    text_a = texts[i] + line
+                    examples.append(InputExample(guid=guid, text_a=text_a, text_b=None))
+            else:
+                for i, line in enumerate(inputs[relation_type]):
+                    guid = "%s-%s" % (set_type, i+1)
+                    if relation_type == 'xAttr':
+                        line = " the part of speaker is " + line[2:len(line)-2]
+                    elif relation_type == 'xReact':
+                        # line = "the reaction of speaker is " + line[2:len(line)-2]
+                        line = " the speaker feels " + line[2:len(line)-2]
+                    elif relation_type == 'xWant':
+                        # line = "the intention of speaker is " + line[2:len(line)-2]
+                        line = " the speaker wants " + line[2:len(line)-2]
+                    else:
+                        line = "the " + str(relation_type) + " of this sentence is " + line[2:len(line)-2]
+                        # line = "the speaker feels " + line[2:len(line)-2] 
+                    text_a = texts[i] + line
+                    examples.append(InputExample(guid=guid, text_a=text_a, text_b=None))
         else:
             for i, line in enumerate(texts):
                 guid = "%s-%s" % (set_type, i+1)

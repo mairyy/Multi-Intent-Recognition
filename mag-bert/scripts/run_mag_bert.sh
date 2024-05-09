@@ -2,9 +2,9 @@
 
 for dataset in 'MIntRec'
 do
-    for relation in 'xAttr' 'xWant'
+    for relation in 'xWant' #'xReact_xWant' 'xReact' 'xAttr' 'xWant'
     do
-        for seed in 0 1 2 3
+        for seed in 0
         # for seed in 0 1 2 3 4 5 6 7 8 9
         do
             python run.py \
