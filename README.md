@@ -1,6 +1,6 @@
 # Multi-Intent-Recognition
 
-<h1>1. Generate relations using Comet</h1>
+<h1>1. Generate relations using Comet (Atomic & Conceptnet)</h1>
 
 - Firstly, create environment and install dependencies:
 
@@ -32,10 +32,27 @@ python scripts/data/make_conceptnet_data_loader.py
 
 - Make sure your directory resembles this: https://github.com/mairyy/Multi-Intent-Recognition/blob/main/comet-commonsense/directory.md
     
-- Put your text files you want to generate relations into input folder
+- Put your text files you want to generate relations into `inputs` folder
 
 - Generate relations by running the following code:
 
 ```
 python generate_relations.py 
+```
+<h2>Retrive relation using SBERT (Atomic)</h2>
+
+- `cd sbert`
+
+- Installation: Python 3.8 or higher, PyTorch 1.11.0 or higher, Transformers 4.32.0 or higher
+
+```
+pip install -U sentence-transformers
+```
+
+- Put your text files you want to generate relations into `inputs` folder
+
+- Retrive relations using SBert by running the following code:
+
+```
+python retrive_relation.py
 ```
