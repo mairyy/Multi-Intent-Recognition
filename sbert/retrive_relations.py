@@ -18,25 +18,14 @@ def get_sim_head(model, knowledge, sentences):
         
     return heads
 
-def get_relation(relation_types, knowledge, heads, sentences):
-    df = pd.DataFrame(sentences, columns=["text"])
-    relations = {}
-    for r in relation_types:
-        relations[r] = []
+def get_relation(relation, knowledge, heads):
+    relation_outputs = []
 
     for h in heads:
         rows = knowledge[knowledge[0] == h]
-        rel_list = rows[1].unique()
-        for r in relation_types:
-            if r in rel_list:
-                relations[r].append(rows[rows[1] == r][2].unique()[0])
-            else:
-                relations[r].append('none')
+        relation_outputs.append(rows[rows[1] == relation][2].unique()[0])
 
-    for r in relation_types:
-        df[r] = relations[r]
-
-    return df
+    return relation_outputs
 
 if __name__ == "__main__":
 
@@ -44,19 +33,22 @@ if __name__ == "__main__":
 
     relation_types = ["xReact", "xWant"]
     atomic20 = pd.read_csv('datasets/atomic20.tsv', sep='\t', header=None)
-    atomic20 = atomic20[atomic20[1].isin(relation_types)]
-
-    knowledge = set(atomic20[0])
-    knowledge = list(knowledge)
     
     input_paths = ['inputs/train.tsv', 'inputs/dev.tsv', 'inputs/test.tsv']
-    outpu_paths = ['outputs/sbert_train.csv', 'outputs/sbert_dev.csv', 'outputs/sbert_test.csv']
+    output_paths = ['outputs/sbert_train.csv', 'outputs/sbert_dev.csv', 'outputs/sbert_test.csv']
 
-    for i, path in tqdm(enumerate(input_paths)):
+    for i, path in tqdm(enumerate(input_paths), total=len(input_paths)):
         input = pd.read_csv(path, sep='\t')
         sentences = list(input['text'])
-        heads = get_sim_head(model=model, knowledge=knowledge, sentences=sentences)
-        outputs = get_relation(relation_types, atomic20, heads, sentences)
-        outputs.to_csv(outpu_paths[i])
+        outputs = pd.DataFrame(sentences, columns=['text'])
+        for relation in relation_types:
+            relation_knowledge = atomic20[atomic20[1] == relation]
+            relation_knowledge = set(relation_knowledge[0])
+            relation_knowledge = list(relation_knowledge)
+
+            heads = get_sim_head(model=model, knowledge=relation_knowledge, sentences=sentences)
+            outputs[relation] = get_relation(relation, atomic20, heads)
+
+        outputs.to_csv(output_paths[i])
         print("Done", path)
 
