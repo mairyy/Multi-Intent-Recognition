@@ -8,6 +8,7 @@ from .text_pre import TextDataset
 from .video_pre import VideoDataset
 from .audio_pre import AudioDataset
 from .mm_pre import MMDataset
+from .relation_pre import RelationDataset
 from .__init__ import benchmarks
 
 __all__ = ['DataManager']
@@ -36,6 +37,10 @@ class DataManager:
         args.text_seq_len, args.video_seq_len, args.audio_seq_len = \
             self.benchmarks['max_seq_lengths']['text'], self.benchmarks['max_seq_lengths']['video'], self.benchmarks['max_seq_lengths']['audio']
 
+        if args.method == 'shark':
+            args.relation_seq_len = self.benchmarks['max_seq_lengths']['relation']
+            args.relation_feat_dim = args.text_feat_dim
+            
         self.train_data_index, self.train_label_ids = self._get_indexes_annotations(os.path.join(self.data_path, 'train.tsv'), args.data_mode)
         self.dev_data_index, self.dev_label_ids = self._get_indexes_annotations(os.path.join(self.data_path, 'dev.tsv'), args.data_mode)
         self.test_data_index, self.test_label_ids = self._get_indexes_annotations(os.path.join(self.data_path, 'test.tsv'), args.data_mode)
@@ -77,11 +82,17 @@ class DataManager:
         text_feats = TextDataset(args, attrs).feats
         video_feats = VideoDataset(args, attrs).feats
         audio_feats = AudioDataset(args, attrs).feats
+        comet_relation_feats = RelationDataset(args, attrs, 'comet').feats
+        sbert_relation_feats = RelationDataset(args, attrs, 'sbert').feats
 
         return {
             'text': text_feats,
             'video': video_feats,
-            'audio': audio_feats
+            'audio': audio_feats,
+            'relation': {
+                'comet': comet_relation_feats,
+                'sbert': sbert_relation_feats
+            }
         }
     
     def _get_multimodal_data(self, args):
@@ -89,10 +100,15 @@ class DataManager:
         text_data = self.unimodal_feats['text']
         video_data = self.unimodal_feats['video']
         audio_data = self.unimodal_feats['audio']
+        comet_data = self.unimodal_feats['relation']['comet']
+        sbert_data = self.unimodal_feats['relation']['sbert']
         
-        mm_train_data = MMDataset(self.train_label_ids, text_data['train'], video_data['train'], audio_data['train'])
-        mm_dev_data = MMDataset(self.dev_label_ids, text_data['dev'], video_data['dev'], audio_data['dev'])
-        mm_test_data = MMDataset(self.test_label_ids, text_data['test'], video_data['test'], audio_data['test'])
+        mm_train_data = MMDataset(self.train_label_ids, text_data['train'], video_data['train'],\
+                                audio_data['train'], comet_data['train'], sbert_data['train'])
+        mm_dev_data = MMDataset(self.dev_label_ids, text_data['dev'], video_data['dev'], \
+                                audio_data['dev'], comet_data['dev'], sbert_data['dev'])
+        mm_test_data = MMDataset(self.test_label_ids, text_data['test'], video_data['test'], \
+                                 audio_data['test'], comet_data['test'], sbert_data['test'])
 
         return {
             'train': mm_train_data,
@@ -107,7 +123,7 @@ class DataManager:
         train_dataloader = DataLoader(data['train'], shuffle=True, batch_size = args.train_batch_size, num_workers = args.num_workers, pin_memory = True)
         dev_dataloader = DataLoader(data['dev'], batch_size = args.eval_batch_size, num_workers = args.num_workers, pin_memory = True)
         test_dataloader = DataLoader(data['test'], batch_size = args.eval_batch_size, num_workers = args.num_workers, pin_memory = True)
-        
+
         self.logger.info('Generate Dataloader Finished...')
 
         return {

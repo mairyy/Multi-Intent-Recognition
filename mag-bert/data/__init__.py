@@ -19,11 +19,12 @@ benchmarks = {
             'text': 30, # truth: 26 
             'video': 230, # truth: 225
             'audio': 480, # truth: 477
+            'relation': 30, #for shark method
         },
         'feat_dims':{
             'text': 768,
             'video': 256,
-            'audio': 768
+            'audio': 768,
         }
     }
 }

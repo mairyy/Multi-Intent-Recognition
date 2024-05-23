@@ -66,6 +66,8 @@ def parse_arguments():
 
     parser.add_argument("--results_file_name", type=str, default = 'results.csv', help="The file name of all the experimental results.")    
 
+    parser.add_argument("--weight_fuse_relation", type=float, default=0.5, help='weight * xReact + (1-weight) * xWant')
+
     args = parser.parse_args()
 
     return args

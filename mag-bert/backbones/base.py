@@ -11,14 +11,19 @@ class MIA(nn.Module):
 
         super(MIA, self).__init__()
 
+        self.args = args
         fusion_method = methods_map[args.method]
         self.model = fusion_method(args)
 
-    def forward(self, text_feats, video_feats, audio_feats):
+    def forward(self, text_feats, video_feats, audio_feats, xReact_comet_feats=None, xWant_comet_feats=None, \
+                xReact_sbert_feats=None, xWant_sbert_feats=None):
 
         video_feats, audio_feats = video_feats.float(), audio_feats.float()
-        mm_model = self.model(text_feats, video_feats, audio_feats)
-
+        
+        if self.args.method == 'shark':
+            mm_model = self.model(text_feats, video_feats, audio_feats, xReact_comet_feats, xWant_comet_feats, xReact_sbert_feats, xWant_sbert_feats)
+        else:
+            mm_model = self.model(text_feats, video_feats, audio_feats)
         return mm_model
         
 class ModelManager:

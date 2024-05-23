@@ -1,2 +1,7 @@
-**/datasets
-**/__pycache__
+datasets/
+__pycache__/
+cache/
+logs/
+results/
+outputs/
+.DS_Store
