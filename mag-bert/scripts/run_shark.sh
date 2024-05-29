@@ -2,7 +2,7 @@
 
 for dataset in 'MIntRec'
 do
-    for seed in 1 #2 #3 4 5 6 7 8 9
+    for seed in 2 #4 5 6 7 8 9
     do
         for weight in 0.9 #0.5 0.7
         do

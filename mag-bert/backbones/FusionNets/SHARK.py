@@ -1,4 +1,5 @@
 from transformers import BertModel, BertConfig
+from transformers.models.bert.modeling_bert import BertPooler
 import torch.nn.functional as F
 from torch import nn
 import torch
@@ -130,6 +131,7 @@ class Shark(nn.Module):
         self.gate = GateModule(args)
         self.fushion = Fushion(args)
         self.mag = MAG(self.config, args)
+        self.pooler = BertPooler(self.config)
         self.dropout = nn.Dropout(self.config.hidden_dropout_prob)
         self.classifier = nn.Linear(self.config.hidden_size, args.num_labels)
 
@@ -143,8 +145,9 @@ class Shark(nn.Module):
         # text_feats = self.fushion(text_emb, xReact_comet_emb, xWant_comet_emb) #remove sbert
         # text_feats = self.fushion(text_emb, xReact_sbert_emb, xWant_sbert_emb) #remove comet
 
-        output = torch.mean(self.mag(text_feats, video_feats, audio_feats), dim=1) #full model
-        # output = torch.mean(text_feats, dim=1) #remove audio&video
+        # output = torch.mean(self.mag(text_feats, video_feats, audio_feats), dim=1) #full model
+        # output = self.pooler(text_feats) #remove audio&video
+        output = self.pooler(self.mag(text_feats, video_feats, audio_feats)) #full model
 
         output = self.dropout(output)
         logits = self.classifier(output)
