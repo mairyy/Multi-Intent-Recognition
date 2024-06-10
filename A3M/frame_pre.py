@@ -5,7 +5,7 @@ from pathlib import Path
 
 def select_frame(src, des, text_path):
     """
-    Select a frame corresponding to each uttarance. 
+    Select a frame corresponding to each utterance. 
     Return:
         Frames which their name matches with format: season_episode_clip_* (ex: S04_E01_29_0_4.jpg)
     """
