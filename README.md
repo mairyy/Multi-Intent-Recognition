@@ -39,7 +39,7 @@ python scripts/data/make_conceptnet_data_loader.py
 ```
 python generate_relations.py 
 ```
-<h2>Retrive relation using SBERT (Atomic)</h2>
+<h1>2. Retrive relation using SBERT (Atomic)</h1>
 
 - `cd sbert`
 
@@ -56,3 +56,17 @@ pip install -U sentence-transformers
 ```
 python retrive_relation.py
 ```
+
+<h1>3. Prepare data for A3M</h1>
+
+- Install `spacy` and `jsonlines`
+
+```
+pip install -U spacy
+
+pip install jsonlines
+```
+
+- Run `frame_pre.py` to select frame for each utterance
+
+- Run `extract_nouns.py` to extract nouns for each utterance
