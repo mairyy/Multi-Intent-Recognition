@@ -1,7 +1,8 @@
 datasets/
-__pycache__/
+**/__pycache__/
 cache/
 logs/
 results/
 outputs/
-.DS_Store
+**/.DS_Store
+**/resnet152-b121ed2d.pth

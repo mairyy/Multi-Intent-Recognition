@@ -8,5 +8,5 @@ text_backbones_map = {
 
 methods_map = {
     'mag_bert': MAG_BERT,
-    'shark': Shark
+    'shark': Shark,
 }
