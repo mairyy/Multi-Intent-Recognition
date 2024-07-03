@@ -44,6 +44,8 @@ class AlignSubNet(nn.Module):
         assert mode in ['avg_pool', 'ctc', 'conv1d']
 
         in_dim_t, in_dim_a, in_dim_v = args.text_feat_dim, args.audio_feat_dim, args.video_feat_dim
+        if args.method == 'a3m':
+            in_dim_v = args.text_feat_dim
         seq_len_t, seq_len_a, seq_len_v = args.text_seq_len, args.audio_seq_len, args.video_seq_len
         self.dst_len = seq_len_t
         self.mode = mode

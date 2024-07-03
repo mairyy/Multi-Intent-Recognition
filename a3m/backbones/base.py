@@ -23,7 +23,7 @@ class MIA(nn.Module):
         if self.args.method == 'shark':
             mm_model = self.model(text_feats, video_feats, audio_feats, xReact_comet_feats, xWant_comet_feats, xReact_sbert_feats, xWant_sbert_feats)
         elif self.args.method == 'a3m':
-            mm_model = self.model(text_feats, video_feats, audio_feats, video_ids, xReact_comet_feats, xWant_comet_feats, xReact_sbert_feats, xWant_sbert_feats, training)
+            mm_model = self.model(text_feats, video_feats, audio_feats, video_ids, xReact_comet_feats, xWant_comet_feats, xReact_sbert_feats, xWant_sbert_feats)
         else:
             mm_model = self.model(text_feats, video_feats, audio_feats)
         return mm_model

@@ -50,6 +50,8 @@ class DataManager:
             # self.tokenizer.unique_no_split_tokens = unique_no_split_tokens + additional_special_tokens
         else:
             self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
+            additional_special_tokens = ['[BIMG]', '[EIMG]', '[IFEAT]']
+            self.tokenizer.add_tokens(additional_special_tokens) 
         
         self.train_data_index, self.train_label_ids = self._get_indexes_annotations(os.path.join(self.data_path, 'train.tsv'), args.data_mode)
         self.dev_data_index, self.dev_label_ids = self._get_indexes_annotations(os.path.join(self.data_path, 'dev.tsv'), args.data_mode)

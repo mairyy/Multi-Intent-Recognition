@@ -14,7 +14,7 @@ class TextDataset:
         self.logger = logging.getLogger(args.logger_name)
         self.base_attrs = base_attrs
         
-        if args.text_backbone.startswith('bart'):
+        if args.text_backbone.startswith('bert'):
             self.feats = self._get_feats(args, base_attrs)
         else:
             raise Exception('Error: inputs are not supported text backbones.')
