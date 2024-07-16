@@ -17,7 +17,7 @@ do
             --gpu_id '0' \
             --video_feats_path 'video_feats.pkl' \
             --audio_feats_path 'audio_feats.pkl' \
-            --text_backbone 'bert-base-uncased' \
+            --text_backbone 'bart-base' \
             --config_file_name 'a3m' \
             --results_file_name 'a3m.csv' \
             --weight_fuse_relation $weight

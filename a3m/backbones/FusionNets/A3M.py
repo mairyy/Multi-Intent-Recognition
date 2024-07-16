@@ -1,4 +1,4 @@
-from transformers import BertModel, BertConfig, BartModel
+from transformers import BertModel, BertConfig, BartModel, BartConfig
 from transformers.models.bert.modeling_bert import BertPooler
 import torch.nn.functional as F
 from torch import nn
@@ -14,7 +14,10 @@ class TextEncoder(nn.Module):
     def __init__(self, args, tokenizer):
         super(TextEncoder, self).__init__()
         self.method = args.method
-        self.encoder = BertModel.from_pretrained(args.text_backbone)
+        if args.text_backbone == 'bart-base':
+            self.encoder = BartModel.from_pretrained('facebook/bart-base')
+        else:
+            self.encoder = BertModel.from_pretrained(args.text_backbone)
         self.encoder.resize_token_embeddings(len(tokenizer))
 
     def get_token_emb(self, text, video):
@@ -233,7 +236,10 @@ class A3M(nn.Module):
 class OurModel(nn.Module):
     def __init__(self, args, tokenizer):
         super(OurModel, self).__init__()
-        self.config = BertConfig.from_pretrained(args.text_backbone)
+        if args.text_backbone == 'bart-base':
+            self.config = BartConfig.from_pretrained('facebook/bart-base')
+        else:
+            self.config = BertConfig.from_pretrained(args.text_backbone)
         self.text_encoder = TextEncoder(args, tokenizer)
         self.gate = GateModule(args)
         self.fushion = Fushion(args)
@@ -249,7 +255,10 @@ class OurModel(nn.Module):
         self.mag = MAG(self.config, args)
 
         self.pooler = BertPooler(self.config)
-        self.dropout = nn.Dropout(self.config.hidden_dropout_prob)
+        if args.text_backbone == 'bart-base':
+            self.dropout = nn.Dropout(self.config.dropout)
+        else:
+            self.dropout = nn.Dropout(self.config.hidden_dropout_prob)
         self.classifier = nn.Linear(self.config.hidden_size, args.num_labels)
 
     def forward(self, text_feats, video_feats, audio_feats, video_ids, xReact_comet_feats, xWant_comet_feats, xReact_sbert_feats, xWant_sbert_feats):
