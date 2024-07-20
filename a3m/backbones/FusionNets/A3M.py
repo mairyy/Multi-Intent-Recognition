@@ -236,6 +236,9 @@ class A3M(nn.Module):
 class OurModel(nn.Module):
     def __init__(self, args, tokenizer):
         super(OurModel, self).__init__()
+
+        self.temp = nn.Parameter(torch.ones([]) * args.temp)
+
         if args.text_backbone == 'bart-base':
             self.config = BartConfig.from_pretrained('facebook/bart-base')
         else:
@@ -261,6 +264,25 @@ class OurModel(nn.Module):
             self.dropout = nn.Dropout(self.config.hidden_dropout_prob)
         self.classifier = nn.Linear(self.config.hidden_size, args.num_labels)
 
+    def contrastive_loss(self, text_feats, video_feats):
+        # print(text_feats.mean(dim=1).shape, video_feats.mean(dim=1).shape)\
+        text_feats = text_feats.mean(dim=1)
+        video_feats = video_feats.mean(dim=1 )
+        sim_matrix = torch.matmul(text_feats, video_feats.T)
+
+        i_logsoftmax = nn.functional.log_softmax(sim_matrix / self.temp, dim=1)
+        j_logsoftmax = nn.functional.log_softmax(sim_matrix.T / self.temp, dim=1)
+        # print(i_logsoftmax.shape, i_logsoftmax.reshape([16,-1]).shape, i_logsoftmax.unsqueeze(1).shape)
+        i_diag = torch.diag(i_logsoftmax)
+        loss_i = i_diag.mean()
+
+        j_diag = torch.diag(j_logsoftmax)
+        loss_j = j_diag.mean()
+
+        con_loss = - (loss_i + loss_j) / 2 #2024-07-18-11-04-57
+
+        return con_loss
+    
     def forward(self, text_feats, video_feats, audio_feats, video_ids, xReact_comet_feats, xWant_comet_feats, xReact_sbert_feats, xWant_sbert_feats):
         xReact_comet_emb, xWant_comet_emb, xReact_sbert_emb, xWant_sbert_emb, token_emb, noun_masks, text_emb = \
             self.text_encoder(text_feats, xReact_comet_feats, xWant_comet_feats, xReact_sbert_feats, xWant_sbert_feats, video_ids)
@@ -280,5 +302,7 @@ class OurModel(nn.Module):
 
         output = self.dropout(output)
         logits = self.classifier(output)
-            
-        return logits
+        
+        con_loss = self.contrastive_loss(text_emb, video_feats)
+
+        return logits, con_loss

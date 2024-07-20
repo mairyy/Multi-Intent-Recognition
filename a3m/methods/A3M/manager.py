@@ -77,10 +77,10 @@ class A3M:
 
                 with torch.set_grad_enabled(True):
 
-                    logits = self.model(text_feats, video_feats, audio_feats, video_ids,\
+                    logits, con_loss = self.model(text_feats, video_feats, audio_feats, video_ids,\
                         xReact_comet_feats, xWant_comet_feats, xReact_sbert_feats, xWant_sbert_feats)
 
-                    loss = self.criterion(logits, label_ids)
+                    loss = self.criterion(logits, label_ids) + con_loss
 
                     self.optimizer.zero_grad()
 
@@ -147,12 +147,12 @@ class A3M:
             
             with torch.set_grad_enabled(False):
                 
-                logits = self.model(text_feats, video_feats, audio_feats, video_ids,\
+                logits, con_loss = self.model(text_feats, video_feats, audio_feats, video_ids,\
                         xReact_comet_feats, xWant_comet_feats, xReact_sbert_feats, xWant_sbert_feats)
                 total_logits = torch.cat((total_logits, logits))
                 total_labels = torch.cat((total_labels, label_ids))
  
-                loss = self.criterion(logits, label_ids)
+                loss = self.criterion(logits, label_ids) + con_loss
                 loss_record.update(loss.item(), label_ids.size(0))
                 
         total_probs = F.softmax(total_logits.detach(), dim=1)
