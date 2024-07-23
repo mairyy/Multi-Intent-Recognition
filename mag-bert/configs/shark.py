@@ -48,5 +48,6 @@ class Param():
             'lr': 0.00002,
             'aligned_method': 'ctc',
             'weight_decay': 0.03,
+            'temp': 0.07,
         }
         return hyper_parameters 
