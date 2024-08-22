@@ -20,7 +20,7 @@ class MIA(nn.Module):
 
         video_feats, audio_feats = video_feats.float(), audio_feats.float()
         
-        if self.args.method == 'shark':
+        if self.args.method == 'shark' or self.args.method == 'tmt':
             mm_model = self.model(text_feats, video_feats, audio_feats, xReact_comet_feats, xWant_comet_feats, xReact_sbert_feats, xWant_sbert_feats)
         else:
             mm_model = self.model(text_feats, video_feats, audio_feats)

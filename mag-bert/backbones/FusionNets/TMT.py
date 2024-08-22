@@ -5,6 +5,8 @@ from torch import nn
 import torch
 from ..SubNets.AlignNets import AlignSubNet
 from ..SubNets.FeatureNets import BERTEncoder, BertCrossEncoder
+from ..SubNets.vit_tmt import ProjetTransformer, CrossTransformer
+#from ...utils.metrics import MMDLoss, OrthLoss
 
 class TextEncoder(nn.Module):
     def __init__(self, args):
@@ -216,22 +218,63 @@ class SDIF(nn.Module):
 
         return shallow_seq
 
-class Shark(nn.Module):
+class TMT(nn.Module):
     def __init__(self, args):
-        super(Shark, self).__init__()
+        super(TMT, self).__init__()
         self.config = BertConfig.from_pretrained(args.text_backbone)
         self.text_encoder = TextEncoder(args)
         self.gate = GateModule(args)
         self.fushion = Fushion(args)
 
-        self.mag = MAG(self.config, args)
+        #self.mag = MAG(self.config, args)
         #self.sdif = SDIF(args)
 
-        self.pooler = BertPooler(self.config)
-        self.dropout = nn.Dropout(self.config.hidden_dropout_prob)
-        self.classifier = nn.Linear(self.config.hidden_size, args.num_labels)
+        #self.pooler = BertPooler(self.config)
+        #self.dropout = nn.Dropout(self.config.hidden_dropout_prob)
+        #self.classifier = nn.Linear(self.config.hidden_size, args.num_labels)
+
+        self.proj_t = nn.Linear(args.text_feat_dim, 256)
+        self.proj_a = nn.Linear(args.audio_feat_dim, 256)
+        self.proj_v = nn.Linear(args.video_feat_dim, 256)
+
+        num_frames = args.text_seq_len + args.video_seq_len + args.audio_seq_len
+        self.project_layer = ProjetTransformer(num_frames=num_frames, dim=256, depth=2, heads=8, mlp_dim=512, dim_head = 64, len_invariant = 6, len_specific = 6, dropout = 0.5, emb_dropout = 0.1)
+
+        self.dropout = nn.Dropout(0.5)
+
+        self.fusion_layer_1 = CrossTransformer(source_num_frames = 150,
+                                                   tgt_num_frames = 150,
+                                                   dim=256,
+                                                   depth=2,
+                                                   heads=8,
+                                                   mlp_dim=256,
+                                                   dropout=0.5,
+                                                   emb_dropout=0.1
+                                                   )
+
+        self.fusion_layer_2 = CrossTransformer(source_num_frames = 150,
+                                                   tgt_num_frames = 150,
+                                                   dim=256,
+                                                   depth=2,
+                                                   heads=8,
+                                                   mlp_dim=256,
+                                                   dropout=0.5,
+                                                   emb_dropout=0.1
+                                                   )
+
+        self.cls_head = nn.Sequential(
+            nn.Linear(256, 128),
+            nn.Linear(128, args.num_labels)
+        )
 
         self.temp = args.temp
+
+        #self.alpha = args.alpha
+        #self.beta = args.beta
+        #self.delta = args.delta
+        #self.device = device
+        #self.orth_fn = OrthLoss()
+        #self.mmd_fn = MMDLoss()
 
     def contrastive_loss(self, feats_1, feats_2):
         # print(feats_1.mean(dim=1).shape, feats_2.mean(dim=1).shape)
@@ -266,11 +309,27 @@ class Shark(nn.Module):
 
         # output = torch.mean(self.mag(text_feats, video_feats, audio_feats), dim=1) #full model
         # output = self.pooler(text_feats) #remove audio&video
-        output = self.pooler(self.mag(text_feats, video_feats, audio_feats)) #full model
+        # output = self.pooler(self.mag(text_feats, video_feats, audio_feats)) #full model
         # output = self.pooler(self.sdif(text_feats, video_feats, audio_feats, text_mask))
 
-        output = self.dropout(output)
-        logits = self.classifier(output)
+        # output = self.dropout(output)
+        # logits = self.classifier(output)
             
         # con_loss = self.contrastive_loss(new_xReact_encoder_outputs_utt, new_xWant_encoder_outputs_utt)
-        return logits
+
+        text_feats = self.proj_t(text_feats)
+        video_feats = self.proj_v(video_feats)
+        audio_feats = self.proj_a(audio_feats)
+        x = torch.cat((video_feats, audio_feats, text_feats), dim=1)
+        # print(x.shape)
+        x = self.project_layer(x)
+        x_invariant, x_specific_v, x_specific_a, x_specific_t = x[:, :6], x[:, 6:8], x[:, 8:10], x[:, 10:12]
+        
+        feat_specific = torch.cat((x_specific_v, x_specific_a, x_specific_t), dim=1)
+        feat_1 = self.fusion_layer_1(x_invariant, feat_specific).mean(dim=1)
+        feat_2 = self.fusion_layer_2(feat_specific, x_invariant).mean(dim=1)
+        feat = feat_1 + feat_2
+
+        logits = self.cls_head(feat)
+
+        return logits, x_invariant, x_specific_v, x_specific_a, x_specific_t, video_feats, audio_feats, text_feats

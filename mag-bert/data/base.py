@@ -37,7 +37,7 @@ class DataManager:
         args.text_seq_len, args.video_seq_len, args.audio_seq_len = \
             self.benchmarks['max_seq_lengths']['text'], self.benchmarks['max_seq_lengths']['video'], self.benchmarks['max_seq_lengths']['audio']
 
-        if args.method == 'shark':
+        if args.method == 'shark' or args.method == 'tmt':
             args.relation_seq_len = self.benchmarks['max_seq_lengths']['relation']
             args.relation_feat_dim = args.text_feat_dim
             

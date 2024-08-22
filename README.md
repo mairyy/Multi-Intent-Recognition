@@ -52,3 +52,5 @@ pip install -r requirements.txt
 ```
 
 - Run: `sh scripts/run_mag_bert.sh`
+
+conda install conda-forge::einops
